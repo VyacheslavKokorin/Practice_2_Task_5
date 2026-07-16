@@ -1,10 +1,12 @@
 const express = require("express");
 const db = require("./db");
+const authRoutes = require("./routes/auth");
 
 const app = express();
 const PORT = 3000;
 
 app.use(express.urlencoded({ extended: true }));
+app.use(authRoutes);
 
 app.get("/", (req, res) => {
   res.send(`
@@ -19,6 +21,7 @@ app.get("/", (req, res) => {
       <main>
         <h1>Дневник путешествий</h1>
         <p>Здесь пользователи смогут делиться своими поездками.</p>
+        <p><a href="/register">Зарегистрироваться</a></p>
       </main>
     </body>
     </html>
