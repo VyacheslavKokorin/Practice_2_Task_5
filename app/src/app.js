@@ -2,6 +2,7 @@ const express = require("express");
 const session = require("express-session");
 const db = require("./db");
 const authRoutes = require("./routes/auth");
+const authMiddleware = require("./middleware/authMiddleware");
 
 const app = express();
 const PORT = 3000;
@@ -26,6 +27,7 @@ app.get("/", (req, res) => {
   if (req.session.userId) {
     accountInfo = `
       <p>Вы вошли в аккаунт.</p>
+      <p><a href="/my-trips">Мои путешествия</a></p>
       <form method="POST" action="/logout">
         <button type="submit">Выйти</button>
       </form>
@@ -45,6 +47,26 @@ app.get("/", (req, res) => {
         <h1>Дневник путешествий</h1>
         <p>Здесь пользователи смогут делиться своими поездками.</p>
         ${accountInfo}
+      </main>
+    </body>
+    </html>
+  `);
+});
+
+app.get("/my-trips", authMiddleware, (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="ru">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Мои путешествия</title>
+    </head>
+    <body>
+      <main>
+        <h1>Мои путешествия</h1>
+        <p>Здесь будут отображаться ваши записи о поездках.</p>
+        <p><a href="/">Вернуться на главную</a></p>
       </main>
     </body>
     </html>
