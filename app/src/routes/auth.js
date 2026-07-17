@@ -41,6 +41,40 @@ function registrationPage(message = "") {
   `;
 }
 
+function loginPage(message = "") {
+  const messageHtml = message ? `<p>${message}</p>` : "";
+
+  return `
+    <!DOCTYPE html>
+    <html lang="ru">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Вход</title>
+    </head>
+    <body>
+      <main>
+        <h1>Вход</h1>
+        ${messageHtml}
+        <form method="POST" action="/login">
+          <div>
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" required>
+          </div>
+          <div>
+            <label for="password">Пароль</label>
+            <input id="password" name="password" type="password" required>
+          </div>
+          <button type="submit">Войти</button>
+        </form>
+        <p><a href="/register">Создать аккаунт</a></p>
+        <p><a href="/">Вернуться на главную</a></p>
+      </main>
+    </body>
+    </html>
+  `;
+}
+
 router.get("/register", (req, res) => {
   res.send(registrationPage());
 });
@@ -78,26 +112,51 @@ router.post("/register", async (req, res) => {
       VALUES (?, ?, ?)
     `).run(username, email, passwordHash);
 
-    res.send(`
-      <!DOCTYPE html>
-      <html lang="ru">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Регистрация завершена</title>
-      </head>
-      <body>
-        <main>
-          <h1>Регистрация завершена</h1>
-          <p>Новый пользователь успешно создан.</p>
-          <p><a href="/">Перейти на главную</a></p>
-        </main>
-      </body>
-      </html>
-    `);
+    res.redirect("/login?registered=1");
   } catch (error) {
     console.error("Ошибка регистрации:", error.message);
     res.status(500).send(registrationPage("Не удалось создать пользователя"));
+  }
+});
+
+router.get("/login", (req, res) => {
+  const message = req.query.registered
+    ? "Регистрация прошла успешно. Теперь войдите."
+    : "";
+
+  res.send(loginPage(message));
+});
+
+router.post("/login", async (req, res) => {
+  try {
+    const email = req.body.email?.trim().toLowerCase();
+    const password = req.body.password;
+
+    if (!email || !password) {
+      return res.status(400).send(loginPage("Заполните все поля"));
+    }
+
+    const user = db
+      .prepare("SELECT id, username, password_hash FROM users WHERE email = ?")
+      .get(email);
+
+    if (!user) {
+      return res.status(401).send(loginPage("Неверный email или пароль"));
+    }
+
+    const passwordIsCorrect = await bcrypt.compare(password, user.password_hash);
+
+    if (!passwordIsCorrect) {
+      return res.status(401).send(loginPage("Неверный email или пароль"));
+    }
+
+    req.session.userId = user.id;
+    req.session.username = user.username;
+
+    res.redirect("/");
+  } catch (error) {
+    console.error("Ошибка входа:", error.message);
+    res.status(500).send(loginPage("Не удалось выполнить вход"));
   }
 });
 
