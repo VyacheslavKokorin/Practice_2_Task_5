@@ -25,3 +25,11 @@ CREATE TABLE IF NOT EXISTS trips (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     CHECK (end_date >= start_date)
 );
+
+-- Тестовый пользователь для проверки сайта
+INSERT OR IGNORE INTO users (username, email, password_hash)
+VALUES (
+    'traveler',
+    'traveler@travel.ru',
+    '$2b$10$TruKkVmHn5HofKEZ0WmUsOGIeDMHHNX8oZBOyO6Y5Jdm2bzn90yF6'
+);
