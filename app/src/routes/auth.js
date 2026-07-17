@@ -160,4 +160,16 @@ router.post("/login", async (req, res) => {
   }
 });
 
+router.post("/logout", (req, res) => {
+  req.session.destroy((error) => {
+    if (error) {
+      console.error("Ошибка выхода:", error.message);
+      return res.status(500).send("Не удалось выйти из аккаунта");
+    }
+
+    res.clearCookie("connect.sid");
+    res.redirect("/");
+  });
+});
+
 module.exports = router;

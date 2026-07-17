@@ -24,7 +24,12 @@ app.get("/", (req, res) => {
   `;
 
   if (req.session.userId) {
-    accountInfo = "<p>Вы вошли в аккаунт.</p>";
+    accountInfo = `
+      <p>Вы вошли в аккаунт.</p>
+      <form method="POST" action="/logout">
+        <button type="submit">Выйти</button>
+      </form>
+    `;
   }
 
   res.send(`
