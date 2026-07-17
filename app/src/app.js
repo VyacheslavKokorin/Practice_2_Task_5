@@ -2,6 +2,7 @@ const express = require("express");
 const session = require("express-session");
 const db = require("./db");
 const authRoutes = require("./routes/auth");
+const tripsRoutes = require("./routes/trips");
 const authMiddleware = require("./middleware/authMiddleware");
 const escapeHtml = require("./utils/escapeHtml");
 
@@ -18,6 +19,7 @@ app.use(
 
 app.use(express.urlencoded({ extended: true }));
 app.use(authRoutes);
+app.use(tripsRoutes);
 
 app.get("/", (req, res) => {
   try {
@@ -53,7 +55,7 @@ app.get("/", (req, res) => {
         .map(
           (trip) => `
             <article>
-              <h3>${escapeHtml(trip.title)}</h3>
+              <h3><a href="/trips/${trip.id}">${escapeHtml(trip.title)}</a></h3>
               <p>Автор: ${escapeHtml(trip.author)}</p>
               <p>Место: ${escapeHtml(trip.city)}, ${escapeHtml(trip.country)}</p>
               <p>Даты: ${escapeHtml(trip.start_date)} — ${escapeHtml(trip.end_date)}</p>
