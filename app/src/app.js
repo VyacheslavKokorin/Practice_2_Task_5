@@ -1,5 +1,6 @@
 const express = require("express");
 const session = require("express-session");
+const path = require("path");
 const db = require("./db");
 const authRoutes = require("./routes/auth");
 const tripsRoutes = require("./routes/trips");
@@ -8,6 +9,8 @@ const escapeHtml = require("./utils/escapeHtml");
 
 const app = express();
 const PORT = 3000;
+
+app.use(express.static(path.join(__dirname, "../public")));
 
 app.use(
   session({
@@ -72,6 +75,7 @@ app.get("/", (req, res) => {
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="/styles.css">
         <title>Дневник путешествий</title>
       </head>
       <body>
@@ -124,6 +128,7 @@ app.get("/my-trips", authMiddleware, (req, res) => {
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="/styles.css">
         <title>Мои путешествия</title>
       </head>
       <body>

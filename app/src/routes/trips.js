@@ -12,6 +12,7 @@ router.get("/trips/new", authMiddleware, (req, res) => {
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <link rel="stylesheet" href="/styles.css">
       <title>Новое путешествие</title>
     </head>
     <body>
@@ -198,6 +199,7 @@ router.get("/trips/:id", (req, res) => {
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="/styles.css">
         <title>${escapeHtml(trip.title)}</title>
       </head>
       <body>
