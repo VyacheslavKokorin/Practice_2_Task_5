@@ -42,6 +42,7 @@ app.get("/", (req, res) => {
       accountInfo = `
         <p>Вы вошли в аккаунт.</p>
         <p><a href="/my-trips">Мои путешествия</a></p>
+        <p><a href="/trips/new">Добавить путешествие</a></p>
         <form method="POST" action="/logout">
           <button type="submit">Выйти</button>
         </form>
@@ -91,23 +92,54 @@ app.get("/", (req, res) => {
 });
 
 app.get("/my-trips", authMiddleware, (req, res) => {
-  res.send(`
-    <!DOCTYPE html>
-    <html lang="ru">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Мои путешествия</title>
-    </head>
-    <body>
-      <main>
-        <h1>Мои путешествия</h1>
-        <p>Здесь будут отображаться ваши записи о поездках.</p>
-        <p><a href="/">Вернуться на главную</a></p>
-      </main>
-    </body>
-    </html>
-  `);
+  try {
+    const trips = db
+      .prepare(`
+        SELECT id, title, country, city, start_date, end_date
+        FROM trips
+        WHERE user_id = ?
+        ORDER BY created_at DESC
+      `)
+      .all(req.session.userId);
+
+    let tripsHtml = "<p>У вас пока нет путешествий.</p>";
+
+    if (trips.length > 0) {
+      tripsHtml = trips
+        .map(
+          (trip) => `
+            <article>
+              <h2><a href="/trips/${trip.id}">${escapeHtml(trip.title)}</a></h2>
+              <p>Место: ${escapeHtml(trip.city)}, ${escapeHtml(trip.country)}</p>
+              <p>Даты: ${escapeHtml(trip.start_date)} — ${escapeHtml(trip.end_date)}</p>
+            </article>
+          `
+        )
+        .join("");
+    }
+
+    res.send(`
+      <!DOCTYPE html>
+      <html lang="ru">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Мои путешествия</title>
+      </head>
+      <body>
+        <main>
+          <h1>Мои путешествия</h1>
+          <p><a href="/trips/new">Добавить путешествие</a></p>
+          ${tripsHtml}
+          <p><a href="/">Вернуться на главную</a></p>
+        </main>
+      </body>
+      </html>
+    `);
+  } catch (error) {
+    console.error("Ошибка получения путешествий пользователя:", error.message);
+    res.status(500).send("Не удалось получить ваши путешествия");
+  }
 });
 
 app.get("/db-check", (req, res) => {
