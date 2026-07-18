@@ -55,7 +55,7 @@ router.get("/trips/new", authMiddleware, (req, res) => {
             <input id="image_url" name="image_url" type="url" required>
           </p>
           <p>
-            <label for="cost">Стоимость путешествия</label><br>
+            <label for="cost">Стоимость путешествия, ₽</label><br>
             <input id="cost" name="cost" type="number" min="0" step="0.01" required>
           </p>
           <button type="submit">Сохранить путешествие</button>
@@ -173,7 +173,7 @@ router.get("/trips/:id", (req, res) => {
       .prepare(`
         SELECT trips.id, trips.title, trips.country, trips.city,
                trips.description, trips.start_date, trips.end_date,
-               trips.latitude, trips.longitude, trips.image_url,
+               trips.latitude, trips.longitude, trips.image_url, trips.cost,
                users.username AS author
         FROM trips
         JOIN users ON trips.user_id = users.id
@@ -187,6 +187,9 @@ router.get("/trips/:id", (req, res) => {
 
     const latitude = String(trip.latitude);
     const longitude = String(trip.longitude);
+    const formattedCost = new Intl.NumberFormat("ru-RU", {
+      maximumFractionDigits: 2
+    }).format(trip.cost);
     const mapUrl = `https://www.openstreetmap.org/?mlat=${encodeURIComponent(latitude)}&mlon=${encodeURIComponent(longitude)}#map=12/${encodeURIComponent(latitude)}/${encodeURIComponent(longitude)}`;
 
     res.send(`
@@ -203,6 +206,7 @@ router.get("/trips/:id", (req, res) => {
           <p>Автор: ${escapeHtml(trip.author)}</p>
           <p>Место: ${escapeHtml(trip.city)}, ${escapeHtml(trip.country)}</p>
           <p>Даты: ${escapeHtml(trip.start_date)} — ${escapeHtml(trip.end_date)}</p>
+          <p>Стоимость: ${escapeHtml(formattedCost)} ₽</p>
           <h2>Фотография</h2>
           <img src="${escapeHtml(trip.image_url)}" alt="Фотография путешествия «${escapeHtml(trip.title)}»" style="max-width: 100%; height: auto;">
           <h2>Геопозиция</h2>
