@@ -173,6 +173,7 @@ router.get("/trips/:id", (req, res) => {
       .prepare(`
         SELECT trips.id, trips.title, trips.country, trips.city,
                trips.description, trips.start_date, trips.end_date,
+               trips.latitude, trips.longitude, trips.image_url,
                users.username AS author
         FROM trips
         JOIN users ON trips.user_id = users.id
@@ -183,6 +184,10 @@ router.get("/trips/:id", (req, res) => {
     if (!trip) {
       return res.status(404).send("Путешествие не найдено");
     }
+
+    const latitude = String(trip.latitude);
+    const longitude = String(trip.longitude);
+    const mapUrl = `https://www.openstreetmap.org/?mlat=${encodeURIComponent(latitude)}&mlon=${encodeURIComponent(longitude)}#map=12/${encodeURIComponent(latitude)}/${encodeURIComponent(longitude)}`;
 
     res.send(`
       <!DOCTYPE html>
@@ -198,6 +203,12 @@ router.get("/trips/:id", (req, res) => {
           <p>Автор: ${escapeHtml(trip.author)}</p>
           <p>Место: ${escapeHtml(trip.city)}, ${escapeHtml(trip.country)}</p>
           <p>Даты: ${escapeHtml(trip.start_date)} — ${escapeHtml(trip.end_date)}</p>
+          <h2>Фотография</h2>
+          <img src="${escapeHtml(trip.image_url)}" alt="Фотография путешествия «${escapeHtml(trip.title)}»" style="max-width: 100%; height: auto;">
+          <h2>Геопозиция</h2>
+          <p>Широта: ${escapeHtml(latitude)}</p>
+          <p>Долгота: ${escapeHtml(longitude)}</p>
+          <p><a href="${mapUrl}" target="_blank" rel="noopener noreferrer">Открыть на карте</a></p>
           <h2>Впечатления</h2>
           <p>${escapeHtml(trip.description)}</p>
           <p><a href="/">Вернуться к путешествиям</a></p>
